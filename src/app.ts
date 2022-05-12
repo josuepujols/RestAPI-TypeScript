@@ -1,5 +1,6 @@
 //imports 
 import express, { Application } from "express";
+import clientRoutes from "./Routes/Client.route";
 import morgan from "morgan";
 
 //app
@@ -13,7 +14,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 //defining routes
-//app.use("/api/auth", authRoutes);
+app.use("/api/clients", clientRoutes);
 
 //export the module 
 export default app;
