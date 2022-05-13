@@ -1,29 +1,38 @@
-import { HydratedDocument, Model, ObjectId } from "mongoose";
+import { DataSource, FindOptionsWhere, ObjectType, Repository, UpdateResult } from "typeorm";
+//import AppDataSource from "../index";
 export class GenericRepository<T> {
-
-    constructor( private entity: Model<T> ) {
-        
+    private type: ObjectType<T>;
+    private repository: Repository<T>;
+    private _dataSource!: DataSource;
+    constructor(type: ObjectType<T>, AppDataSource: DataSource) {
+        this.type = type;
+        this._dataSource = AppDataSource;
+        this.repository = this._dataSource.getRepository<T>(this.type);
     }
     //get all documents in collection 
-    async GetAllAsync(): Promise<Array<T>> {
-        const collection: Array<T> = await this.entity.find({});
+    async GetAllAsync(relation: string): Promise<Array<T>> {
+        let collection: Array<T> = [];
+        if (relation === "") collection = await this.repository.find();
+        else {
+            collection = await this.repository.find({
+                relations: [relation as string]
+            });
+        }
         return collection;
     }
 
-    async GetByIdAsync(id: string): Promise<Model<T>> {
-        const foundItem: Model<T> = await this.entity.findById({_id : id}) as Model<T>;
-        return foundItem; 
-    }
- 
-    async InsertAsync(model: Model<T>, item: T): Promise<any> {
-        let objectToSave = this.create(model);
-        const object = {...objectToSave, ...item};
-        const savedItem = await object.save();
-        console.log(object);
-        return true; 
+    async InsertAsync(model: T): Promise<T> {
+        const result = await this.repository.save<T>(model);
+        return result;
     }
 
-    create<T>(type: (new () => T)): T {
-        return new type();
+    async UpdateAsync(id: number, model: T): Promise<UpdateResult> {
+        const result = await this.repository.update(id, model);
+        return result;
+    }
+
+    async DeleteAsync(model: T): Promise<T> {
+        const result = await this.repository.remove(model);
+        return result;
     }
 }

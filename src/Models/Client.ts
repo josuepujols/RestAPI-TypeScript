@@ -1,35 +1,37 @@
-import { IClient } from "../Interfaces/Client.dto";
-import { Schema, model, Model } from "mongoose";
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, ManyToOne } from "typeorm";
+import { Travel } from "./Travel";
 
+@Entity()
+export class Client {
+    @PrimaryGeneratedColumn()
+    id!: number;
 
-const clientSchema = new Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    lastName: {
-        type: String,
-        Required: true
-    },
-    idIdentification: {
-        type: String,
-        required: true,
-        min: 10
-    },
-    nationality: {
-        type: String,
-        required: true
-    },
-    age: {
-        type: Number,
-        required: true
-    },
-    idtravel: {
-        string: String,
-        required: false
-    }
-});
+    @Column({
+        length: 15
+    })
+    name!: string;
 
-const Client: Model<IClient> = model<IClient>('Client', clientSchema);
+    @Column({
+        length: 20
+    })
+    lastName!: string;
 
-export default Client;
+    @Column()
+    age!: number;
+
+    @Column({
+        length: 20
+    })
+    idIdentification!: string;
+
+    //@OneToOne(type => Travel) @JoinColumn()
+    @ManyToOne(
+        type => Travel,
+        category => category.id,
+        {
+          cascade: ['insert', 'update'],
+        }
+    )
+    travel!: Travel
+
+}
